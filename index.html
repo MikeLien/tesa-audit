@@ -533,7 +533,7 @@ h2.section-title {
 
     <div class="nav-row">
       <button class="btn-secondary" onclick="goTo('s-step1')">← 上一步</button>
-      <button class="btn-primary" onclick="goTo('s-step3')">繼續 →</button>
+      <button class="btn-primary" onclick="goStep2()">繼續 →</button>
     </div>
   </div>
 </div>
@@ -549,15 +549,14 @@ h2.section-title {
     <div class="section-tag">Step 3</div>
     <h2 class="section-title">十大元素診斷</h2>
     <p class="section-desc">
-      展開每個元素，針對你的對象回答 5 個問題。<br>
-      <strong>共頻</strong>＝這個面向表現良好・<strong>半頻</strong>＝部分符合・<strong>斷頻</strong>＝明顯不足
+      展開每個元素，針對你的對象回答 5 個問題（1＝完全不符，5＝完全如此）。每個元素都完成後才能進入下一步。
     </p>
 
     <div id="elements-list"></div>
 
     <div class="nav-row">
       <button class="btn-secondary" onclick="goTo('s-step2')">← 上一步</button>
-      <button class="btn-primary" onclick="goTo('s-step4')">繼續 →</button>
+      <button class="btn-primary" onclick="goStep3()">繼續 →</button>
     </div>
   </div>
 </div>
@@ -580,7 +579,7 @@ h2.section-title {
 
     <div class="nav-row">
       <button class="btn-secondary" onclick="goTo('s-step3')">← 上一步</button>
-      <button class="btn-primary" onclick="goTo('s-step5')">繼續 →</button>
+      <button class="btn-primary" onclick="goStep4()">繼續 →</button>
     </div>
   </div>
 </div>
@@ -603,7 +602,7 @@ h2.section-title {
 
     <div class="nav-row">
       <button class="btn-secondary" onclick="goTo('s-step4')">← 上一步</button>
-      <button class="btn-primary" onclick="generateReport()">產出報告 →</button>
+      <button class="btn-primary" onclick="goStep5()">產出報告 →</button>
     </div>
   </div>
 </div>
@@ -818,6 +817,52 @@ function goStep1() {
   state.goal = document.getElementById('f-goal').value.trim();
   if (!state.subject) { showToast('請填入對象名稱'); return; }
   goTo('s-step2');
+}
+
+function goStep2() {
+  const missing = PRECHECKS.filter(p => !state.prechecks[p.id]);
+  if (missing.length > 0) {
+    showToast(`還有 ${missing.length} 題尚未作答，請全部填完再繼續`);
+    return;
+  }
+  goTo('s-step3');
+}
+
+function goStep3() {
+  for (const el of ELEMENTS) {
+    const answered = Object.values(state.elements[el.id] || {}).filter(v => v > 0).length;
+    if (answered < 5) {
+      const body = document.getElementById('body-' + el.id);
+      const chev = document.getElementById('chev-' + el.id);
+      if (body && !body.classList.contains('open')) {
+        body.classList.add('open');
+        if (chev) chev.textContent = '▴';
+      }
+      const card = document.getElementById('card-' + el.id);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast(`「${el.name}」還有 ${5 - answered} 題未填，請完成後再繼續`);
+      return;
+    }
+  }
+  goTo('s-step4');
+}
+
+function goStep4() {
+  const missing = DIMENSIONS.filter(d => !state.dimensions[d.id]);
+  if (missing.length > 0) {
+    showToast(`還有 ${missing.length} 題尚未作答，請全部填完再繼續`);
+    return;
+  }
+  goTo('s-step5');
+}
+
+function goStep5() {
+  const missing = CYCLE_QS.filter(cq => !state.cycle[cq.id]);
+  if (missing.length > 0) {
+    showToast(`還有 ${missing.length} 題尚未作答，請全部填完再繼續`);
+    return;
+  }
+  generateReport();
 }
 
 // ═══════════════════════════════════════════════
