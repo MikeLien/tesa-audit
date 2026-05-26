@@ -386,6 +386,30 @@ h2.section-title {
 .cycle-badge.xian { background: #fbe9e7; color: #B85042; }
 .cycle-badge.lve  { background: #fce4ec; color: #880e4f; }
 
+.detail-group { margin-bottom: 24px; }
+.detail-group-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; color: var(--forest);
+  margin-bottom: 8px; padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--border);
+}
+.detail-q-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px; line-height: 1.6; color: var(--dark);
+}
+.detail-q-row:last-child { border-bottom: none; }
+.detail-q-text { flex: 1; }
+.detail-label { font-size: 10px; color: var(--muted); font-weight: 600; margin-bottom: 2px; letter-spacing: .02em; }
+.detail-score {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white; margin-top: 1px;
+}
+.detail-score.s-high { background: var(--forest); }
+.detail-score.s-mid  { background: var(--moss); }
+.detail-score.s-low  { background: var(--amber); color: var(--dark); }
+
 .attribution {
   margin-top: 36px;
   padding-top: 20px;
@@ -1058,6 +1082,7 @@ function generateReport() {
 
   const valLabel = v => v >= 5 ? '良好' : v >= 3 ? '尚可' : v >= 1 ? '待加強' : '—';
   const valClass = v => v >= 5 ? 'dc-gongpin' : v >= 3 ? 'dc-banpin' : 'dc-duanpin';
+  const scoreClass = v => v >= 4 ? 's-high' : v >= 3 ? 's-mid' : 's-low';
 
   // Insights per strong element (section 二)
   const strengthInsights = {
@@ -1183,6 +1208,62 @@ function generateReport() {
           <li><strong>3 個月里程碑</strong>：讓「${bot3[0].desc}」這個面向從目前的 ${bot3[0].score}/25 分提升到 20 分以上。找一個最直接的著力點，讓每次小改變都能自然帶動下一次。</li>
           <li><strong>長期方向</strong>：整體從「${type}」往「${pct >= 60 ? '共生體' : '半循環體'}」演進。關鍵不是全面出擊，而是讓各面向之間能夠相互回饋——一個面向變強，自然帶動其他面向一起成長。</li>
         </ul>
+      </div>
+
+      <!-- 答題明細 -->
+      <div class="report-section">
+        <div class="report-section-title">五　答題明細</div>
+
+        <div class="detail-group">
+          <div class="detail-group-header">前置確認（覺知準備，不計入分數）</div>
+          ${PRECHECKS.map(p => {
+            const v = state.prechecks[p.id] || 0;
+            return `<div class="detail-q-row">
+              <div class="detail-q-text"><div class="detail-label">${p.label}</div>${p.sub}</div>
+              <div class="detail-score ${scoreClass(v)}">${v}</div>
+            </div>`;
+          }).join('')}
+        </div>
+
+        ${ELEMENTS.map(el => {
+          const elData = state.elements[el.id] || {};
+          const elTotal = el.qs.reduce((a, _, qi) => a + (elData[qi] || 0), 0);
+          return `<div class="detail-group">
+            <div class="detail-group-header">
+              ${el.icon} ${el.name}&emsp;<span style="font-weight:400;color:var(--muted);">${el.desc}</span>
+              <span style="margin-left:auto;">${elTotal} / 25</span>
+            </div>
+            ${el.qs.map((q, qi) => {
+              const v = elData[qi] || 0;
+              return `<div class="detail-q-row">
+                <div class="detail-q-text">${q}</div>
+                <div class="detail-score ${scoreClass(v)}">${v}</div>
+              </div>`;
+            }).join('')}
+          </div>`;
+        }).join('')}
+
+        <div class="detail-group">
+          <div class="detail-group-header">四大面向</div>
+          ${DIMENSIONS.map(d => {
+            const v = state.dimensions[d.id] || 0;
+            return `<div class="detail-q-row">
+              <div class="detail-q-text"><div class="detail-label">${d.name}</div>${d.q}</div>
+              <div class="detail-score ${scoreClass(v)}">${v}</div>
+            </div>`;
+          }).join('')}
+        </div>
+
+        <div class="detail-group">
+          <div class="detail-group-header">循環穿透</div>
+          ${CYCLE_QS.map(cq => {
+            const v = state.cycle[cq.id] || 0;
+            return `<div class="detail-q-row">
+              <div class="detail-q-text"><div class="detail-label">${cq.label}</div>${cq.q}</div>
+              <div class="detail-score ${scoreClass(v)}">${v}</div>
+            </div>`;
+          }).join('')}
+        </div>
       </div>
 
       <div class="attribution">
