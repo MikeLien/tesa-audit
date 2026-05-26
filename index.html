@@ -465,6 +465,17 @@ h2.section-title {
 </head>
 <body>
 
+<!-- ─────────── TEST PANEL ─────────── -->
+<div id="test-panel" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a3d1b;color:white;padding:9px 16px;font-size:12px;gap:8px;align-items:center;flex-wrap:wrap;">
+  <span style="font-weight:700;color:#97BC62;margin-right:6px;">🧪 測試模式</span>
+  <a href="?scenario=gongsheng" data-scenario="gongsheng" style="color:white;text-decoration:none;padding:3px 12px;border:1px solid rgba(255,255,255,0.35);border-radius:12px;">共生體</a>
+  <a href="?scenario=ban"       data-scenario="ban"       style="color:white;text-decoration:none;padding:3px 12px;border:1px solid rgba(255,255,255,0.35);border-radius:12px;">半循環體</a>
+  <a href="?scenario=xian"      data-scenario="xian"      style="color:white;text-decoration:none;padding:3px 12px;border:1px solid rgba(255,255,255,0.35);border-radius:12px;">線性體</a>
+  <a href="?scenario=lve"       data-scenario="lve"       style="color:white;text-decoration:none;padding:3px 12px;border:1px solid rgba(255,255,255,0.35);border-radius:12px;">掠奪體</a>
+  <a href="?scenario=bimodal"   data-scenario="bimodal"   style="color:white;text-decoration:none;padding:3px 12px;border:1px solid rgba(255,255,255,0.35);border-radius:12px;">兩極型</a>
+  <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:11px;">移除 URL 的 ?scenario= 可離開測試模式</span>
+</div>
+
 <!-- ─────────── WELCOME ─────────── -->
 <div class="screen active" id="s-welcome">
   <div class="top-bar">
@@ -945,6 +956,111 @@ function checkDraftOnLoad() {
 }
 
 // ═══════════════════════════════════════════════
+// TEST SCENARIOS
+// ═══════════════════════════════════════════════
+
+function uniformElements(qs) {
+  const result = {};
+  ELEMENTS.forEach(el => { result[el.id] = {0:qs[0],1:qs[1],2:qs[2],3:qs[3],4:qs[4]}; });
+  return result;
+}
+
+const TEST_SCENARIOS = {
+  gongsheng: {
+    displayName: '共生體',
+    subject: '[TEST] 共生體示範', forWhom: '測試用', goal: '整體均衡、各面向相互支援',
+    elements: uniformElements([5,5,4,4,5]),  // 23/25 each → 230 total → pct 90%
+    prechecks:  {p1:5,p2:5,p3:4,p4:5,p5:4},
+    dimensions: {unity:5,wisdom:4,love:5,soul:4},
+    cycle:      {c1:5,c2:4,c3:5}
+  },
+  ban: {
+    displayName: '半循環體',
+    subject: '[TEST] 半循環體示範', forWhom: '測試用', goal: '具備基礎但部分面向卡住',
+    elements: uniformElements([4,4,3,3,4]),  // 18/25 each → 180 total → pct 65%
+    prechecks:  {p1:3,p2:4,p3:3,p4:3,p5:3},
+    dimensions: {unity:3,wisdom:4,love:3,soul:3},
+    cycle:      {c1:3,c2:3,c3:4}
+  },
+  xian: {
+    displayName: '線性體',
+    subject: '[TEST] 線性體示範', forWhom: '測試用', goal: '以線性運作為主，能量在流動中散失',
+    elements: uniformElements([3,3,3,3,3]),  // 15/25 each → 150 total → pct 50%
+    prechecks:  {p1:2,p2:2,p3:3,p4:2,p5:2},
+    dimensions: {unity:2,wisdom:3,love:2,soul:2},
+    cycle:      {c1:2,c2:2,c3:3}
+  },
+  lve: {
+    displayName: '掠奪體',
+    subject: '[TEST] 掠奪體示範', forWhom: '測試用', goal: '整體處於消耗狀態',
+    elements: uniformElements([2,1,1,2,1]),  // 7/25 each → 70 total → pct 10%
+    prechecks:  {p1:1,p2:1,p3:2,p4:1,p5:1},
+    dimensions: {unity:1,wisdom:2,love:1,soul:1},
+    cycle:      {c1:1,c2:1,c3:2}
+  },
+  bimodal: {
+    displayName: '兩極型',
+    subject: '[TEST] 兩極型（水風光強 / 人物神弱）', forWhom: '測試用', goal: '驗證強弱配對建議',
+    elements: {
+      water:  {0:5,1:5,2:4,3:5,4:4},  // 23
+      wind:   {0:5,1:4,2:5,3:4,4:5},  // 23
+      light:  {0:4,1:5,2:5,3:4,4:5},  // 23
+      earth:  {0:3,1:3,2:3,3:3,4:3},  // 15
+      fire:   {0:3,1:3,2:3,3:3,4:3},  // 15
+      wood:   {0:3,1:3,2:3,3:3,4:3},  // 15
+      gold:   {0:3,1:3,2:3,3:3,4:3},  // 15
+      human:  {0:1,1:2,2:1,3:1,4:2},  // 7
+      things: {0:1,1:1,2:2,3:1,4:2},  // 7
+      spirit: {0:2,1:1,2:1,3:2,4:1}   // 7  → total 150 → pct 50%
+    },
+    prechecks:  {p1:5,p2:4,p3:5,p4:4,p5:5},
+    dimensions: {unity:4,wisdom:2,love:5,soul:3},
+    cycle:      {c1:3,c2:2,c3:4}
+  }
+};
+
+function getScenarioParam() {
+  return new URLSearchParams(window.location.search).get('scenario');
+}
+
+function loadTestScenario(name) {
+  const s = TEST_SCENARIOS[name];
+  if (!s) return;
+  state.subject    = s.subject;
+  state.forWhom    = s.forWhom;
+  state.goal       = s.goal;
+  state.prechecks  = { ...s.prechecks };
+  state.elements   = JSON.parse(JSON.stringify(s.elements));
+  state.dimensions = { ...s.dimensions };
+  state.cycle      = { ...s.cycle };
+  const fs = document.getElementById('f-subject');
+  const fw = document.getElementById('f-for-whom');
+  const fg = document.getElementById('f-goal');
+  if (fs) fs.value = state.subject;
+  if (fw) fw.value = state.forWhom;
+  if (fg) fg.value = state.goal;
+  applySelectionsToDOM();
+  generateReport();
+  goTo('s-report');
+}
+
+function initTestMode() {
+  const scenario = getScenarioParam();
+  if (!scenario || !TEST_SCENARIOS[scenario]) return;
+  const panel = document.getElementById('test-panel');
+  panel.style.display = 'flex';
+  document.body.style.paddingTop = '44px';
+  // Highlight active scenario chip
+  const activeLink = panel.querySelector(`[data-scenario="${scenario}"]`);
+  if (activeLink) {
+    activeLink.style.background = 'rgba(151,188,98,0.35)';
+    activeLink.style.borderColor = '#97BC62';
+    activeLink.style.fontWeight = '700';
+  }
+  loadTestScenario(scenario);
+}
+
+// ═══════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════
 
@@ -1156,7 +1272,7 @@ function updateElementBadge(eid) {
 // ═══════════════════════════════════════════════
 
 function generateReport() {
-  clearDraft();
+  if (!getScenarioParam()) clearDraft();
   // Collect element scores
   const elScores = ELEMENTS.map(el => {
     const data = state.elements[el.id] || {};
@@ -1440,6 +1556,7 @@ renderElements();
 renderDimensions();
 renderCycle();
 checkDraftOnLoad();
+initTestMode();
 </script>
 </body>
 </html>
