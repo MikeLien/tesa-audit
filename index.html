@@ -497,7 +497,16 @@ h2.section-title {
       約 20–30 分鐘完成 · 報告可下載 PDF 或複製分享
     </p>
 
-    <button class="btn-primary" onclick="goTo('s-step1')">開始檢核 →</button>
+    <div id="resume-banner" style="display:none;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:20px;text-align:left;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:.03em;">你有一份未完成的進度</div>
+      <div id="resume-subject" style="font-size:15px;font-weight:700;color:var(--forest);margin-bottom:14px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="resumeDraft()" style="font-size:13px;padding:10px 22px;">繼續上次 →</button>
+        <button class="btn-secondary" onclick="discardDraft()" style="font-size:13px;">清除重來</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btn-start-fresh" onclick="goTo('s-step1')">開始檢核 →</button>
 
     <p class="attribution" style="margin-top:40px;">
       源自《地球共生區・第一部曲：十大自然科技基礎元素》<br>覺識書音 / 覺識書院，2024
@@ -825,14 +834,126 @@ const state = {
   cycle: {}      // c1|c2|c3: 5|3|1
 };
 
+let currentStepId = 's-welcome';
+
+// ═══════════════════════════════════════════════
+// DRAFT (localStorage)
+// ═══════════════════════════════════════════════
+
+const DRAFT_KEY = 'tesa_draft_v1';
+
+function saveDraft() {
+  if (currentStepId === 's-welcome' || currentStepId === 's-report') return;
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      version: 1,
+      savedAt: Date.now(),
+      currentStep: currentStepId,
+      subject: state.subject,
+      forWhom: state.forWhom,
+      goal: state.goal,
+      prechecks: { ...state.prechecks },
+      elements: JSON.parse(JSON.stringify(state.elements)),
+      dimensions: { ...state.dimensions },
+      cycle: { ...state.cycle }
+    }));
+  } catch(e) {}
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+}
+
+function relativeTime(ts) {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 2) return '剛才';
+  if (mins < 60) return `${mins} 分鐘前`;
+  if (hours < 24) return `${hours} 小時前`;
+  if (days === 1) return '昨天';
+  return `${days} 天前`;
+}
+
+function applySelectionsToDOM() {
+  PRECHECKS.forEach(p => {
+    const v = state.prechecks[p.id];
+    if (v) document.querySelectorAll(`[data-group="precheck"][data-key="${p.id}"][data-value="${v}"]`).forEach(el => el.classList.add('picked'));
+  });
+  ELEMENTS.forEach(el => {
+    const elData = state.elements[el.id] || {};
+    el.qs.forEach((_, qi) => {
+      const v = elData[qi];
+      if (v) document.querySelectorAll(`[data-group="element"][data-key="${el.id}-q${qi}"][data-value="${v}"]`).forEach(dot => dot.classList.add('picked'));
+    });
+    updateElementBadge(el.id);
+  });
+  DIMENSIONS.forEach(d => {
+    const v = state.dimensions[d.id];
+    if (v) document.querySelectorAll(`[data-group="dim"][data-key="${d.id}"][data-value="${v}"]`).forEach(el => el.classList.add('picked'));
+  });
+  CYCLE_QS.forEach(cq => {
+    const v = state.cycle[cq.id];
+    if (v) document.querySelectorAll(`[data-group="cycle"][data-key="${cq.id}"][data-value="${v}"]`).forEach(el => el.classList.add('picked'));
+  });
+}
+
+function resumeDraft() {
+  const draft = loadDraft();
+  if (!draft) return;
+  state.subject  = draft.subject  || '';
+  state.forWhom  = draft.forWhom  || '';
+  state.goal     = draft.goal     || '';
+  state.prechecks   = draft.prechecks   || {};
+  state.elements    = draft.elements    || {};
+  state.dimensions  = draft.dimensions  || {};
+  state.cycle       = draft.cycle       || {};
+  const fs = document.getElementById('f-subject');
+  const fw = document.getElementById('f-for-whom');
+  const fg = document.getElementById('f-goal');
+  if (fs) fs.value = state.subject;
+  if (fw) fw.value = state.forWhom;
+  if (fg) fg.value = state.goal;
+  applySelectionsToDOM();
+  const validSteps = ['s-step1', 's-step2', 's-step3', 's-step4', 's-step5'];
+  const target = validSteps.includes(draft.currentStep) ? draft.currentStep : 's-step1';
+  goTo(target);
+}
+
+function discardDraft() {
+  clearDraft();
+  document.getElementById('resume-banner').style.display = 'none';
+}
+
+function checkDraftOnLoad() {
+  const draft = loadDraft();
+  if (!draft || !draft.subject) return;
+  const banner = document.getElementById('resume-banner');
+  if (!banner) return;
+  document.getElementById('resume-subject').textContent =
+    `「${draft.subject}」· ${relativeTime(draft.savedAt)}`;
+  banner.style.display = 'block';
+  document.getElementById('btn-start-fresh').style.display = 'none';
+}
+
 // ═══════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════
 
 function goTo(id) {
+  currentStepId = id;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+  saveDraft();
 }
 
 function goStep1() {
@@ -982,6 +1103,7 @@ function selectLikert(el, group, key, value) {
   }
   else if (group === 'dim') state.dimensions[key] = value;
   else if (group === 'cycle') state.cycle[key] = value;
+  saveDraft();
 }
 
 // ═══════════════════════════════════════════════
@@ -1034,6 +1156,7 @@ function updateElementBadge(eid) {
 // ═══════════════════════════════════════════════
 
 function generateReport() {
+  clearDraft();
   // Collect element scores
   const elScores = ELEMENTS.map(el => {
     const data = state.elements[el.id] || {};
@@ -1316,6 +1439,7 @@ renderPrechecks();
 renderElements();
 renderDimensions();
 renderCycle();
+checkDraftOnLoad();
 </script>
 </body>
 </html>
