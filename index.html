@@ -1056,21 +1056,35 @@ function generateReport() {
     soul: { name: '昇華靈魂價值', val: state.dimensions.soul || 0 }
   };
 
-  const valLabel = v => v >= 5 ? '共頻' : v >= 3 ? '半頻' : v >= 1 ? '斷頻' : '—';
+  const valLabel = v => v >= 5 ? '良好' : v >= 3 ? '尚可' : v >= 1 ? '待加強' : '—';
   const valClass = v => v >= 5 ? 'dc-gongpin' : v >= 3 ? 'dc-banpin' : 'dc-duanpin';
 
-  // Insights per weak element
+  // Insights per strong element (section 二)
+  const strengthInsights = {
+    water: '資源流動和更新循環這個面向你已有基礎——把「讓事情流動起來」的方式帶到目前較卡的地方，往往比直接補弱項更有效。',
+    wind: '訊息傳遞和連結擴散這個面向你已有基礎——透過更廣的傳遞讓其他面向也跟著活化。',
+    light: '啟動力和清晰度這個面向你已有基礎——讓這份清晰去照亮其他還不夠明確的部分。',
+    earth: '根基和在地扎根這個面向你已有基礎——穩固的土壤能支撐其他面向的生長。',
+    fire: '熱情和行動力這個面向你已有基礎——把這份動力引導到目前最需要活化的地方。',
+    wood: '成長節奏和生命力這個面向你已有基礎——有機的成長方式可以帶動其他部分一起生長。',
+    gold: '價值流通和互惠結構這個面向你已有基礎——讓這套互惠邏輯延伸到其他待改善的面向。',
+    human: '人的協作和多元創造力這個面向你已有基礎——讓更多人的天賦進入系統，帶動整體。',
+    things: '資源配置和物盡其用這個面向你已有基礎——看看有哪些潛力還沒被使用，引導到弱項。',
+    spirit: '源頭意識和核心意圖這個面向你已有基礎——當初心清晰，其他面向往往自然找到方向。'
+  };
+
+  // Insights per weak element (section 三)
   const insights = {
-    water: '能量流通不暢，考慮建立明確的「進」與「出」的機制，讓資源不囤積、不流失。',
-    wind: '訊息傳遞存在盲區，找出卡在哪裡——是語言不夠清楚？還是傳遞渠道沒打通？',
-    light: '啟動力不足或透明度待提升。試著讓內部運作更公開，或重新找回最初的啟動動力。',
-    earth: '根基薄弱或與在地脫節。先問：這個對象真正立足的土壤是什麼？',
-    fire: '熱情或動力出現消耗。回到最初的意圖，確認驅動能量是否來自更新性的來源。',
-    wood: '成長卡住，或成長的方式非自然有機。重新問：它想往哪個方向長？是被允許的嗎？',
-    gold: '價值結構或交換模式有失衡。確認每個參與者是否都能受益，而非只有某一端得利。',
-    human: '人的面向有忽略，可能某些聲音沒被聽到，或天賦沒被好好運用。',
-    things: '資源的配置可以更優化。找出哪個部分放錯位置，或有潛力但沒被使用。',
-    spirit: '源頭意圖需要重新確認。當日常運作偏離初心，問自己：這個對象本質上是在服務什麼？'
+    water: '資源和動力的流通有些卡住了。試著建立更清楚的「進來」和「出去」的機制，避免累積在某個地方動不了。',
+    wind: '訊息傳遞有盲區，找出卡在哪裡——是表達不夠清楚？還是傳遞的管道沒有打通？',
+    light: '啟動力或透明度待加強。試著讓內部運作更清晰可見，或重新連結當初最初的動力是什麼。',
+    earth: '根基或與所在環境的連結待強化。先問：這個對象真正立足的土壤是什麼？扎得夠深了嗎？',
+    fire: '熱情或動力有消耗的跡象。回到最初的意圖，確認驅動自己的來源是否能夠自我更新。',
+    wood: '成長感覺卡住了，或節奏不自然。試著問：它真正想往哪個方向長？目前的方式有沒有給它空間？',
+    gold: '給予和獲得之間有些不平衡。確認每個參與者是否都能從中受益，而不是只有某一方一直在付出。',
+    human: '人的面向有些被忽略了，可能有些聲音沒被聽見，或者有天賦沒有被好好發揮。',
+    things: '有些資源放錯地方，或者有潛力但還沒被使用。找出哪裡有東西被閒置著。',
+    spirit: '最初的意圖和現在的行動是否還一致？當日常運作和核心初心有落差，先問：這個對象本質上是在服務什麼？'
   };
 
   const date = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -1144,29 +1158,30 @@ function generateReport() {
       <div class="report-section">
         <div class="report-section-title">二　可調整方向</div>
         <ul class="insight-list green">
-          ${top3.map(e => `<li><strong>${e.name}元素已有基礎</strong>——以「${e.name}」的邏輯（${e.desc}）帶動其他元素，可以起到撬動效應。</li>`).join('')}
+          ${top3.map(e => `<li>${e.icon} ${strengthInsights[e.id] || '<strong>' + e.desc + '</strong>這個面向你已有基礎，可以從這裡出發帶動其他面向一起改善。'}</li>`).join('')}
         </ul>
       </div>
 
       <!-- 該注意的地方 -->
       <div class="report-section">
         <div class="report-section-title">三　該注意的地方</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">循環定位：
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+          ${state.subject ? `「${state.subject}」目前定位：` : '整體定位：'}
           <span class="cycle-badge ${typeClass}">${type}</span>
         </p>
         <ul class="insight-list amber">
-          ${bot3.map(e => `<li>${insights[e.id] || e.name + ' 元素有待強化。'}</li>`).join('')}
+          ${bot3.map(e => `<li>${e.icon} ${insights[e.id] || e.desc + '這個面向有待強化。'}</li>`).join('')}
         </ul>
-        ${state.goal ? `<p style="font-size:13px;color:var(--muted);margin-top:14px;line-height:1.7;">對照你的目標「${state.goal}」，弱項元素可能是目前距離目標最遠的地方。</p>` : ''}
+        ${state.goal ? `<p style="font-size:13px;color:var(--muted);margin-top:14px;line-height:1.7;">對照你的目標「${state.goal}」，以上這幾個面向可能是目前距離目標最遠的地方。</p>` : ''}
       </div>
 
-      <!-- 正向循環設計 -->
+      <!-- 共生的下一步 -->
       <div class="report-section">
-        <div class="report-section-title">四　正向循環設計</div>
+        <div class="report-section-title">四　共生的下一步</div>
         <ul class="insight-list moss">
-          <li><strong>30 天啟動（從最強項出發）</strong>：以「${top3[0].name}」（${top3[0].desc}）的特質，設計一個能強化最弱項「${bot3[0].name}」的具體行動。每天 10 分鐘，連續 30 天，觀察系統的整體變化。</li>
-          <li><strong>3 個月里程碑</strong>：讓「${bot3[0].name}」的分數從 ${bot3[0].score} 提升到 20+。找一個能直接改善它的槓桿點，讓改變有機會自我加強。</li>
-          <li><strong>長尺度方向</strong>：整體系統從「${type}」往「${pct >= 60 ? '共生體' : '半循環體'}」演化。關鍵是：讓每個元素的產出，成為另一個元素的輸入。</li>
+          <li><strong>30 天小實驗</strong>：你在「${top3[0].desc}」這個面向最有基礎。試著用這裡的優勢，設計一個每天 10 分鐘、連續 30 天的小行動，直接改善目前最弱的「${bot3[0].desc}」面向。觀察有沒有帶來連鎖效應。</li>
+          <li><strong>3 個月里程碑</strong>：讓「${bot3[0].desc}」這個面向從目前的 ${bot3[0].score}/25 分提升到 20 分以上。找一個最直接的著力點，讓每次小改變都能自然帶動下一次。</li>
+          <li><strong>長期方向</strong>：整體從「${type}」往「${pct >= 60 ? '共生體' : '半循環體'}」演進。關鍵不是全面出擊，而是讓各面向之間能夠相互回饋——一個面向變強，自然帶動其他面向一起成長。</li>
         </ul>
       </div>
 
