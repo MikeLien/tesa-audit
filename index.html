@@ -461,6 +461,51 @@ h2.section-title {
   .score-block { flex-direction: column; gap: 8px; }
   .steps-overview { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── MODE TOGGLE ── */
+.mode-label { font-size: 13px; font-weight: 600; color: var(--dark); margin: 24px 0 8px; }
+.mode-toggle { display: flex; gap: 12px; margin-bottom: 4px; }
+.mode-btn {
+  flex: 1; padding: 14px 16px; border-radius: 10px; cursor: pointer;
+  border: 2px solid var(--border); background: white; text-align: left;
+  font-family: inherit; transition: border-color .15s, background .15s;
+}
+.mode-btn .mode-title { font-weight: 700; font-size: 14px; color: var(--dark); display: block; margin-bottom: 4px; }
+.mode-btn .mode-desc { font-size: 12px; color: var(--muted); line-height: 1.5; display: block; }
+.mode-btn.active { border-color: var(--forest); background: #f0f5ed; }
+.mode-btn.active .mode-title { color: var(--forest); }
+
+/* ── DEEP MODE: DIMENSION SUB-QUESTIONS ── */
+.deep-subqs {
+  margin: 10px 0 14px; padding: 12px 16px;
+  background: var(--cream); border-radius: 8px; border-left: 3px solid var(--moss);
+}
+.deep-subqs-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+.deep-subqs ul { margin: 0; padding-left: 18px; }
+.deep-subqs li { font-size: 13px; color: #444; line-height: 1.65; margin-bottom: 3px; }
+
+/* ── DEEP MODE: ELEMENT NOTES ── */
+.element-notes { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+.element-notes label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+.element-notes textarea {
+  width: 100%; min-height: 72px; padding: 10px 12px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 13px; color: var(--dark);
+  resize: vertical; background: white; box-sizing: border-box;
+}
+.element-notes textarea:focus { outline: none; border-color: var(--moss); }
+.element-notes-report {
+  margin-top: 8px; padding: 10px 12px; background: #f8fbf4;
+  border-radius: 6px; font-size: 13px; color: #444; line-height: 1.6;
+  border-left: 3px solid var(--light-moss);
+}
+
+/* ── P-4 WARNING ── */
+.p4-note {
+  margin: 6px 0 10px; font-size: 12px; color: #7A2E0C;
+  background: #FFF5F0; border-radius: 6px; padding: 7px 10px;
+  border-left: 3px solid var(--amber);
+}
 </style>
 </head>
 <body>
@@ -505,7 +550,7 @@ h2.section-title {
     </div>
 
     <p style="font-size:13px;color:var(--muted);margin-bottom:28px;">
-      約 20–30 分鐘完成 · 報告可下載 PDF 或複製分享
+      標準模式 20–30 分鐘 · 深度模式 40–60 分鐘 · 報告可下載 PDF 或複製分享
     </p>
 
     <div id="resume-banner" style="display:none;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:20px;text-align:left;">
@@ -550,6 +595,18 @@ h2.section-title {
     <div class="field">
       <label>這個對象想達成什麼？（它存在的目的、希望創造的改變）</label>
       <textarea id="f-goal" placeholder="例：創造一個讓人安全探索內在的空間；讓十大元素的智慧進入日常決策…"></textarea>
+    </div>
+
+    <div class="mode-label">檢核深度</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-btn-standard" onclick="setMode('standard')">
+        <span class="mode-title">📋 標準模式</span>
+        <span class="mode-desc">20–30 分鐘・七步驟完整流程</span>
+      </button>
+      <button class="mode-btn" id="mode-btn-deep" onclick="setMode('deep')">
+        <span class="mode-title">🔍 深度模式</span>
+        <span class="mode-desc">40–60 分鐘・四大面向細分・元素觀察筆記</span>
+      </button>
     </div>
 
     <div class="nav-row">
@@ -680,16 +737,17 @@ const PRECHECKS = [
     sub: '我把自己定位為與這個對象同等的學習者，而不是評判者或裁判？'
   },
   {
-    id: 'p3', label: 'P-3　歸零能力',
-    sub: '我能夠放下對這個對象的既有判斷，讓自己重新、清透地觀察它？'
+    id: 'p3', label: 'P-3　四個尊重',
+    sub: '我尊重所有相關人的獨特性與共通性、在地土地、自然萬物，以及每件事的創造性能量？'
   },
   {
-    id: 'p4', label: 'P-4　四個尊重',
-    sub: '我尊重這個對象的獨特性、存在意義、創造能量，以及它的自然位置？'
+    id: 'p4', label: 'P-4　不分裂・不對立',
+    sub: '我在進行這次檢核時，是否避免用「分裂」或「對立」的視角？',
+    note: '提醒：「覺醒 vs 沉睡」「高頻 vs 低頻」「光明 vs 黑暗」等二元思維，本身就是書中明示的失衡警訊。（第120、122頁）'
   },
   {
-    id: 'p5', label: 'P-5　以愛為出發',
-    sub: '進行這次檢核的動力，是希望這個對象變得更好——而不是要證明它有問題？'
+    id: 'p5', label: 'P-5　歸零能力',
+    sub: '我能夠放下對這個對象的既有成見與標籤，讓自己重新、清透地觀察它現在的真實狀態？'
   }
 ];
 
@@ -799,19 +857,52 @@ const ELEMENTS = [
 const DIMENSIONS = [
   {
     id: 'unity', name: '一體性',
-    q: '從整體來看，這個對象是否呈現出萬物一體的狀態？各部分是否相互連結而非孤立存在、各自為政？'
+    q: '從整體來看，這個對象是否呈現出萬物一體的狀態？各部分是否相互連結而非孤立存在、各自為政？',
+    subqs: [
+      '是否考量了這個對象對地球 / 環境的影響？',
+      '是否考量了能量流動的整體結構，而不只是有形的部分？',
+      '是否盤點了所有涉及的族群，包括邊緣或容易被忽略的人？',
+      '結果是否從多個面向評估——不只財務，也包含心境、健康、關係、文化？',
+      '是否設想了不同背景的人如何共存、共用這個對象？'
+    ]
   },
   {
     id: 'wisdom', name: '真實智慧',
-    q: '這個對象的決策和運作，是否基於真實的智慧——合於慈悲原則、心理方案與現實執行辦法內外一致？'
+    q: '這個對象的決策和運作，是否基於真實的智慧——合於慈悲原則、心理方案與現實執行辦法內外一致？',
+    subqs: [
+      '原則一：是否真正平等對待每一個人，不以能力、付費或程度分層？',
+      '原則二：是否推動他人拿回自己的天賦本領，而不是製造對你的依賴？',
+      '原則三：是否支持人們的蛻變過程，而非只服務「已就位」的人？',
+      '原則四：是否避免「我來助人 / 渡人 / 救人 / 醫人」的姿態？（最關鍵，書第190頁）',
+      '原則五：是否能跳出侷限性思考，往一體共頻的方向走？',
+      '原則六：內在狀態是否健康——歡喜心、感恩心、如常——而非長期焦慮或壓力？'
+    ]
   },
   {
     id: 'love', name: '全然的愛',
-    q: '愛是否是驅動這個對象存在的核心能量？它的運作是否超越了條件限制，能包容所有參與者？'
+    q: '愛是否是驅動這個對象存在的核心能量？它的運作是否超越了條件限制，能包容所有參與者？',
+    subqs: [
+      '心：你內在對相關人 / 物有真實的愛嗎？',
+      '念：你的思考中有愛的成分嗎？還是充滿批判或恐懼？',
+      '能量：你的能量場是否在傳遞愛？',
+      '行動：具體的行動是否體現了愛？',
+      '系統：你建構的系統，是否在你不在時也能繼續傳遞愛？（最深的一層）'
+    ]
   },
   {
     id: 'soul', name: '昇華靈魂價值',
-    q: '這個對象是否幫助參與其中的靈魂得到昇華——讓他們更接近自己最好的狀態，而不只是滿足表面需求？'
+    q: '這個對象是否幫助參與其中的靈魂得到昇華——讓他們更接近自己最好的狀態，而不只是滿足表面需求？',
+    subqs: [
+      '服務了過去的自己嗎——有在療癒過去留下的傷？',
+      '服務了現在的自己嗎？',
+      '服務了未來的自己嗎——是真實的未來，不是累積後的表象？',
+      '服務了潛意識的自己嗎？',
+      '服務了內在小孩嗎？',
+      '服務了高維智慧角色的自己嗎？',
+      '服務了靈魂其他面向嗎？',
+      '服務了共學夥伴與同行者嗎？',
+      '服務了靈魂伴侶嗎？'
+    ]
   }
 ];
 
@@ -839,10 +930,12 @@ const CYCLE_QS = [
 
 const state = {
   subject: '', forWhom: '', goal: '',
-  prechecks: {}, // p1-p5: 5|3|1
-  elements: {},  // water.q0 .. spirit.q4: 5|3|1
-  dimensions: {}, // unity|wisdom|love|soul: 5|3|1
-  cycle: {}      // c1|c2|c3: 5|3|1
+  deepMode: false,
+  prechecks: {}, // p1-p5: 1-5 Likert
+  elements: {},  // water.q0 .. spirit.q4: 1-5 Likert
+  dimensions: {}, // unity|wisdom|love|soul: 1-5 Likert
+  cycle: {},      // c1|c2|c3: 1-5 Likert
+  notes: {}       // water|wind|... : free text (deep mode)
 };
 
 let currentStepId = 's-welcome';
@@ -863,10 +956,12 @@ function saveDraft() {
       subject: state.subject,
       forWhom: state.forWhom,
       goal: state.goal,
+      deepMode: state.deepMode,
       prechecks: { ...state.prechecks },
       elements: JSON.parse(JSON.stringify(state.elements)),
       dimensions: { ...state.dimensions },
-      cycle: { ...state.cycle }
+      cycle: { ...state.cycle },
+      notes: { ...state.notes }
     }));
   } catch(e) {}
 }
@@ -923,16 +1018,22 @@ function resumeDraft() {
   state.subject  = draft.subject  || '';
   state.forWhom  = draft.forWhom  || '';
   state.goal     = draft.goal     || '';
+  state.deepMode    = draft.deepMode    || false;
   state.prechecks   = draft.prechecks   || {};
   state.elements    = draft.elements    || {};
   state.dimensions  = draft.dimensions  || {};
   state.cycle       = draft.cycle       || {};
+  state.notes       = draft.notes       || {};
   const fs = document.getElementById('f-subject');
   const fw = document.getElementById('f-for-whom');
   const fg = document.getElementById('f-goal');
   if (fs) fs.value = state.subject;
   if (fw) fw.value = state.forWhom;
   if (fg) fg.value = state.goal;
+  const btnStd = document.getElementById('mode-btn-standard');
+  const btnDeep = document.getElementById('mode-btn-deep');
+  if (btnStd) btnStd.classList.toggle('active', !state.deepMode);
+  if (btnDeep) btnDeep.classList.toggle('active', state.deepMode);
   applySelectionsToDOM();
   const validSteps = ['s-step1', 's-step2', 's-step3', 's-step4', 's-step5'];
   const target = validSteps.includes(draft.currentStep) ? draft.currentStep : 's-step1';
@@ -1127,6 +1228,24 @@ function goStep5() {
 }
 
 // ═══════════════════════════════════════════════
+// MODE & NOTES
+// ═══════════════════════════════════════════════
+
+function setMode(mode) {
+  state.deepMode = (mode === 'deep');
+  const btnStd  = document.getElementById('mode-btn-standard');
+  const btnDeep = document.getElementById('mode-btn-deep');
+  if (btnStd)  btnStd.classList.toggle('active',  !state.deepMode);
+  if (btnDeep) btnDeep.classList.toggle('active',  state.deepMode);
+  saveDraft();
+}
+
+function saveNote(elId, value) {
+  state.notes[elId] = value;
+  saveDraft();
+}
+
+// ═══════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════
 
@@ -1136,6 +1255,7 @@ function renderPrechecks() {
     <div class="precheck-item">
       <div class="q-label">${p.label}</div>
       <div class="q-sub">${p.sub}</div>
+      ${p.note ? `<div class="p4-note">${p.note}</div>` : ''}
       ${likertRow(p.id, 'precheck', '還沒有', '做到了')}
     </div>
   `).join('');
@@ -1161,6 +1281,14 @@ function renderElements() {
             ${likertRow(el.id + '-q' + qi, 'element', '完全不符', '完全如此')}
           </div>
         `).join('')}
+        ${state.deepMode ? `
+          <div class="element-notes">
+            <label>這個面向的觀察或補充（選填）</label>
+            <textarea id="note-${el.id}"
+              placeholder="例如：目前的狀況、卡住的地方、剛浮現的想法…"
+              oninput="saveNote('${el.id}', this.value)">${state.notes[el.id] || ''}</textarea>
+          </div>
+        ` : ''}
       </div>
     </div>
   `).join('');
@@ -1172,6 +1300,12 @@ function renderDimensions() {
     <div class="dim-card">
       <div class="dim-name">${d.name}</div>
       <div class="dim-q">${d.q}</div>
+      ${state.deepMode && d.subqs ? `
+        <div class="deep-subqs">
+          <div class="deep-subqs-label">深入思考再評分</div>
+          <ul>${d.subqs.map(sq => `<li>${sq}</li>`).join('')}</ul>
+        </div>
+      ` : ''}
       ${likertRow(d.id, 'dim', '完全不符', '完全如此')}
     </div>
   `).join('');
@@ -1479,6 +1613,11 @@ function generateReport() {
                 <div class="detail-score ${scoreClass(v)}">${v}</div>
               </div>`;
             }).join('')}
+            ${state.notes[el.id] ? `
+              <div class="element-notes-report">
+                <strong style="font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;">觀察筆記</strong><br>
+                ${state.notes[el.id]}
+              </div>` : ''}
           </div>`;
         }).join('')}
 
